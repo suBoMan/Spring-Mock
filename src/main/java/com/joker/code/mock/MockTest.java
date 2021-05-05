@@ -1,5 +1,6 @@
 package com.joker.code.mock;
 
+import com.joker.code.mock.service.UserService;
 import com.joker.code.spring.SpringMockApplicationContext;
 
 /**
@@ -13,7 +14,10 @@ public class MockTest {
     public static void main(String[] args) {
         SpringMockApplicationContext applicationContext = new SpringMockApplicationContext(AppConfig.class);
 
-        System.out.println(applicationContext.getBean("userService"));
+//        System.out.println(applicationContext.getBean("userService"));
+
+        UserService userService = (UserService) applicationContext.getBean("userService");
+        userService.test();
     }
 
 }

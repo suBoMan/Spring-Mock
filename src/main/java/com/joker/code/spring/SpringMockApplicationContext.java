@@ -1,6 +1,7 @@
 package com.joker.code.spring;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Map;
@@ -45,6 +46,16 @@ public class SpringMockApplicationContext {
         Class clazz = beanDefinition.getClazz();
         try {
             Object instance = clazz.getDeclaredConstructor().newInstance();
+            // 给Bean实例的属性进行赋值(依赖注入)
+            // 遍历类的所有属性
+            for (Field field : clazz.getDeclaredFields()) {
+                // 对属性使用类@Autowried注解的属性进行注入
+                if (field.isAnnotationPresent(Autowired.class)) {
+                    Object bean = getBean(field.getName());
+                    field.setAccessible(true);
+                    field.set(instance, bean);
+                }
+            }
 
             return instance;
         } catch (InstantiationException e) {
