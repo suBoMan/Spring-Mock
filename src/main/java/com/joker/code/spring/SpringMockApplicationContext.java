@@ -35,14 +35,14 @@ public class SpringMockApplicationContext {
             BeanDefinition beanDefinition = entry.getValue();
             // 单例Bean
             if (beanDefinition.getScope().equals("singleton")) {
-                Object bean = createBean(beanDefinition);
+                Object bean = createBean(beanName, beanDefinition);
                 singletonObjects.put(beanName, bean);
             }
         }
     }
 
 
-    private Object createBean(BeanDefinition beanDefinition) {
+    private Object createBean(String beanName, BeanDefinition beanDefinition) {
         Class clazz = beanDefinition.getClazz();
         try {
             Object instance = clazz.getDeclaredConstructor().newInstance();
@@ -55,6 +55,11 @@ public class SpringMockApplicationContext {
                     field.setAccessible(true);
                     field.set(instance, bean);
                 }
+            }
+
+            // 判断实例是否实现了BeanNameAware接口
+            if (instance instanceof BeanNameAware) {
+                ((BeanNameAware) instance).setBeanName(beanName);
             }
 
             return instance;
@@ -154,7 +159,7 @@ public class SpringMockApplicationContext {
                 return o;
             } else {
                 // 如果不是单例Bean，需要我们创建该Bean对象
-                Object bean = createBean(beanDefinition);
+                Object bean = createBean(beanName, beanDefinition);
                 return bean;
             }
 
