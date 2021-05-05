@@ -46,7 +46,8 @@ public class SpringMockApplicationContext {
         Class clazz = beanDefinition.getClazz();
         try {
             Object instance = clazz.getDeclaredConstructor().newInstance();
-            // 给Bean实例的属性进行赋值(依赖注入)
+
+            // 依赖注入（ 给Bean实例的属性进行赋值）
             // 遍历类的所有属性
             for (Field field : clazz.getDeclaredFields()) {
                 // 对属性使用类@Autowried注解的属性进行注入
@@ -57,9 +58,14 @@ public class SpringMockApplicationContext {
                 }
             }
 
-            // 判断实例是否实现了BeanNameAware接口
+            // Aware回调 判断实例是否实现了BeanNameAware接口
             if (instance instanceof BeanNameAware) {
                 ((BeanNameAware) instance).setBeanName(beanName);
+            }
+
+            // 初始化
+            if (instance instanceof InitializingBean) {
+                ((InitializingBean) instance).afterPropertiesSet();
             }
 
             return instance;
@@ -70,6 +76,8 @@ public class SpringMockApplicationContext {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
