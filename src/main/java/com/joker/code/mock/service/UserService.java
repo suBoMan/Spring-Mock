@@ -19,6 +19,13 @@ public class UserService implements BeanNameAware {
 
     private String beanName;
 
+    // 验证bean后置处理器
+    private String name;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public void setBeanName(String name) {
         beanName = name;
@@ -27,6 +34,7 @@ public class UserService implements BeanNameAware {
     public void test(){
         System.out.println(orderService);
         System.out.println(beanName);
+        System.out.println(name);
     }
 
 

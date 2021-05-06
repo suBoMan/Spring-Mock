@@ -4,6 +4,8 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +22,7 @@ public class SpringMockApplicationContext {
     // 单例池
     private ConcurrentHashMap<String, Object> singletonObjects = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
+    private List<BeanPostProcessor> beanPostProcessorList = new ArrayList<>();
 
 
     public SpringMockApplicationContext(Class configClass) {
@@ -63,9 +66,23 @@ public class SpringMockApplicationContext {
                 ((BeanNameAware) instance).setBeanName(beanName);
             }
 
+            // 调用Bean后置处理器BeanPostProcessor的位置--初始化前。
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                // bean被初始化前实现的自定义逻辑
+                // 目的是对当前这个Instance进行额外的加工，加工的逻辑是由程序员自己实现的。
+                // 注意这里面返回的bean和传入的Bean可以不是同一个对象。
+                instance = beanPostProcessor.postProcessorBeforeInitialization(instance, beanName);
+            }
+
             // 初始化
             if (instance instanceof InitializingBean) {
                 ((InitializingBean) instance).afterPropertiesSet();
+            }
+
+            // 调用Bean后置处理器BeanPostProcessor的位置--初始化后。
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                // 初始化后实现的逻辑
+                instance = beanPostProcessor.postProcessorAfterInitialization(instance, beanName);
             }
 
             return instance;
@@ -122,8 +139,15 @@ public class SpringMockApplicationContext {
                             Class<?> clazz = classLoader.loadClass(className);
 
                             if (clazz.isAnnotationPresent(Component.class)) {
-                                // 解析类，判断当前Bean是Singleton(单例)Bean还是prototype(原型)Bean
 
+                                // 判断clazz是不是实现了BeanPostProcessor接口
+                                if (BeanPostProcessor.class.isAssignableFrom(clazz)) {
+                                    //如果是则直接new这个对象
+                                    BeanPostProcessor instance = (BeanPostProcessor) clazz.getDeclaredConstructor().newInstance();
+                                    beanPostProcessorList.add(instance);
+                                }
+
+                                // 解析类，判断当前Bean是Singleton(单例)Bean还是prototype(原型)Bean
                                 Component componentAnnotation = clazz.getDeclaredAnnotation(Component.class);
                                 String beanName = componentAnnotation.value();
 
@@ -144,6 +168,14 @@ public class SpringMockApplicationContext {
 
                             }
                         } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchMethodException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         }
 
