@@ -37,7 +37,7 @@ public class SpringMockApplicationContext {
             String beanName = entry.getKey();
             BeanDefinition beanDefinition = entry.getValue();
             // 单例Bean
-            if (beanDefinition.getScope().equals("singleton")) {
+            if ("singleton".equals(beanDefinition.getScope())) {
                 Object bean = createBean(beanName, beanDefinition);
                 singletonObjects.put(beanName, bean);
             }
@@ -194,7 +194,7 @@ public class SpringMockApplicationContext {
             // 获取该Bean的定义
             BeanDefinition beanDefinition =  beanDefinitionMap.get(beanName);
            // 判断Bean是不是单例的，如果是则直接通过单例池中获取
-            if (beanDefinition.getScope().equals("singleton")) {
+            if ("singleton".equals(beanDefinition.getScope())) {
                 Object o = singletonObjects.get(beanName);
                 return o;
             } else {

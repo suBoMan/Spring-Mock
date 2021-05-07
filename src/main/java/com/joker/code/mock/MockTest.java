@@ -1,6 +1,7 @@
 package com.joker.code.mock;
 
-import com.joker.code.mock.service.UserService;
+import com.joker.code.mock.service.AopTestService;
+import com.joker.code.mock.service.AopTestServiceImp;
 import com.joker.code.spring.SpringMockApplicationContext;
 
 /**
@@ -16,8 +17,11 @@ public class MockTest {
 
 //        System.out.println(applicationContext.getBean("userService"));
 
-        UserService userService = (UserService) applicationContext.getBean("userService");
-        userService.test();
+//        UserService userService = (UserService) applicationContext.getBean("userService");
+//        userService.test();
+
+        AopTestService aopTestService = (AopTestService) applicationContext.getBean("aopTestService");
+        aopTestService.test();
     }
 
 }
